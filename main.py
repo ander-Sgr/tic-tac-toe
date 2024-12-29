@@ -30,21 +30,16 @@ def enter_move(board):
     token = int(input("Enter a movement: "))
     if not input_valid(token):
         print("Error: Verify the input")
+        return
+    move_made = False
     for i in range(len(board)):
         for j in range(len(board[i])):
-            # if token == board[i][j]:
-            #   board[i][j] = token
-            if board[i][j] != MACHINE_TOKEN:
-                board[i][j] = token
-            else:
-                print("Error: the field is not empty")
-
-
-def move(board):
-    token = int(input("Enter a movement: "))
-    if not input_valid(token):
-        print("Error: Verify the input")
-
+            if board[i][j] == token:
+                board[i][j] = USER_TOKEN
+                move_made = True
+    if not move_made:
+        print("Error: The field is not empty, try again")
+               
 
 def make_list_of_free_fields(board):
     empty_positions = []
@@ -60,16 +55,35 @@ def make_list_of_free_fields(board):
 def victory_for(board, sign):
     # La función analiza el estatus del tablero para verificar si
     # el jugador que utiliza las 'O's o las 'X's ha ganado el juego.
-    print("a")
+    if sign == USER_TOKEN:
+        player = "human"
+    elif sign == MACHINE_TOKEN:
+        player = "machine"
+    else:
+        player = None
+    cross1 = cross2 = True
+    for i in range(len(board)):
+        if board[i][0] == sign and board[i][1] == sign and board[i][2] == sign:
+            return player
+        if board[0][i] == sign and board[1][i] == sign and board[2][i] == sign:
+            return player
+        if board[i][i] != sign:
+            cross1 = False
+        if board[2 - i][2 - i] != sign:
+            cross2 = False
+    if cross1 or cross2:
+        return player
+    return None
 
 
 def draw_move(board):
     # La función dibuja el movimiento de la máquina y actualiza el tablero.
     free_positions = make_list_of_free_fields(board)
-    length_tuple = len(free_positions)
-    if length_tuple > 0:
-        random_pos = randrange(length_tuple)
-        board[random_pos][random_pos] = MACHINE_TOKEN
+    size = len(free_positions)
+    if size > 0:
+        r = randrange(size)
+        i, j = free_positions[r]
+        board[i][j] = MACHINE_TOKEN
 
 
 if __name__ == "__main__":
@@ -84,8 +98,18 @@ if __name__ == "__main__":
         display_board(board)
         if human_turn:
             enter_move(board)
-            # win = victory_for(board, USER_TOKEN)
+            winner = victory_for(board, USER_TOKEN)
         else:
             draw_move(board)
-            # win = victory_for(board, MACHINE_TOKEN)
+            winner = victory_for(board, MACHINE_TOKEN)
+        if winner != None:
+            break
+        human_turn = not human_turn
         free_positions = make_list_of_free_fields(board)
+    display_board(board)
+    if winner == 'human':
+        print("You win!")
+    elif winner == 'machine':
+        print("You lost, machine wins!")
+    else:
+        print("Empate")
